@@ -28,7 +28,7 @@ homepage:            https://github.com/emilypi/cabal-hoogle
 -- bug-reports:
 
 -- The license under which the package is released.
-license:             MIT
+license:             GPL-3.0-or-later
 
 -- The file containing the license text.
 license-file:        LICENSE
@@ -70,4 +70,3 @@ executable cabal-hoogle
 
   -- Base language which the package is written in.
   default-language:    Haskell2010
-
