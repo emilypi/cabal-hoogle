@@ -1,0 +1,10 @@
+
+./Setup.hs,15
+main main1,2
+
+./src/Distribution/CabalHoogle.hs,62
+module Distribution.CabalHoogle Distribution.CabalHoogle0,1
+
+./src/Main.hs,37
+module Main Main0,1
+main main2,3

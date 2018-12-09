@@ -63,10 +63,26 @@ executable cabal-hoogle
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base ^>=4.9.1.0
+  build-depends:       base ^>= 4.9
+                     , bytestring
+                     , Cabal ^>= 2.4
+                     , containers
+                     , directory
+                     , errors
+                     , exceptions
+                     , hoogle
+                     , lens
+                     , mtl
+                     , optparse-applicative
+                     , process
+                     , reflection
+                     , text
+                     , transformers
+                     , yet-another-logger
 
   -- Directories containing source files.
   hs-source-dirs:      src
 
   -- Base language which the package is written in.
   default-language:    Haskell2010
+  ghc-options: -Wall -fwarn-tabs
