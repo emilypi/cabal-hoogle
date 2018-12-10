@@ -9,14 +9,20 @@ import System.Directory (findExecutable)
 import System.Exit (ExitCode(..), exitWith)
 import System.Logger (Logger(..))
 
+import Control.Lens
 import Control.Monad.Catch (MonadThrow(..))
 import Control.Monad.IO.Class (MonadIO(..))
 
-import qualified Data.ByteString.Lazy as BS
-import Data.Reflection
-import qualified Data.Text as T (Text, takeWhile)
+import Data.Bool (bool)
+import qualified Data.ByteString.Lazy.Char8 as BS8
+import Data.Char (isSpace)
+import Data.Reflection (Given(..), give)
+import Data.Semigroup ((<>))
+import Data.Text hiding (takeWhile)
+import qualified Data.Text as T
 
 import Distribution.Exceptions
+
 
 -- TODO
 data ProcessConfig = ProcessConfig
@@ -29,7 +35,7 @@ runHoogle
   => MonadIO m
   => MonadThrow m
   => FilePath
-  -> [T.Text]
+  -> [Text]
   -> m ()
 runHoogle = undefined
 
@@ -49,29 +55,32 @@ findHoogleExecutable = do
     notInstalled =
       throwM . NotInstalled $ "Hoogle executable not found"
 
-    wrongVersion p v =  throwM . HoogleVersion
+    wrongVersion p v =  throwM . HoogleVersion . pack
       $  "Hoogle executable located at '"
       <> p
       <> "' has incompatible verison: "
       <> v
 
     -- TODO: Vendor typed-process
-    versionCmd env p = proc p ["--numeric-version"] $
-      tryAny . fmap fst $ readProcess_ env
+    versionCmd env p = undefined
+      --proc p ["--numeric-version"] $ tryAny . fmap fst $ readProcess_ env
 
     checkVersion hooglePath = liftIO $ do
-      procEnv <- give
-      version <- versionCmd procEnv p
-      either (wrongVersion hooglePath) (extractVersion procEnv hooglePath) $
-        version
+      let procEnv = give
+      version <- versionCmd procEnv hooglePath
+--      either (wrongVersion hooglePath) (extractVersion procEnv hooglePath) $ version
+      undefined
+
+    parseVersion = undefined
+    minHoogleVersion = undefined
 
     extractVersion env hooglePath bs =
-      let versionBS = BS.unpack bs
+      let versionBS = BS8.unpack bs
       in case parseVersion (takeWhile (not . isSpace) versionBS) of
-        Nothing -> wrongVersion hooglePath versionBS
-        Just v  ->
-          bool (wrongVersion hooglePath) (pure hooglePath) $
-            v >= (env ^. minHoogleVersion)
+        Nothing -> undefined
+         --wrongVersion hooglePath versionBS
+        Just v  -> undefined
+--          bool (wrongVersion hooglePath) (pure hooglePath) $ v >= env ^. minHoogleVersion
 
 
 -- | In the case where the '--setup' flag is enabled,
