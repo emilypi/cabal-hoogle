@@ -12,8 +12,11 @@ import System.Logger (Logger(..))
 import Control.Monad.Catch (MonadThrow(..))
 import Control.Monad.IO.Class (MonadIO(..))
 
+import qualified Data.ByteString.Lazy as BS
 import Data.Reflection
-import Data.Text
+import qualified Data.Text as T (Text, takeWhile)
+
+import Distribution.Exceptions
 
 -- TODO
 data ProcessConfig = ProcessConfig
@@ -26,19 +29,50 @@ runHoogle
   => MonadIO m
   => MonadThrow m
   => FilePath
-  -> [Text]
+  -> [T.Text]
   -> m ()
 runHoogle = undefined
 
 -- | Using the process config and 'System.Directory',
 -- grep available $PATH$ information for hoogle
--- executables and return the absolute filepath.
+-- executables and return the absolute filepath
+-- if 'hoogle' has an amenable version
 findHoogleExecutable
   :: Given ProcessConfig
   => MonadIO m
   => MonadThrow m
   => m FilePath
-findHoogleExecutable = undefined
+findHoogleExecutable = do
+  mHooglePath <- liftIO $ findExecutable "hoogle"
+  maybe notInstalled checkVersion mHooglePath
+  where
+    notInstalled =
+      throwM . NotInstalled $ "Hoogle executable not found"
+
+    wrongVersion p v =  throwM . HoogleVersion
+      $  "Hoogle executable located at '"
+      <> p
+      <> "' has incompatible verison: "
+      <> v
+
+    -- TODO: Vendor typed-processe
+    versionCmd env p = proc p ["--numeric-version"] $
+      tryAny . fmap fst $ readProcess_ env
+
+    checkVersion hooglePath = liftIO $ do
+      procEnv <- give
+      version <- versionCmd procEnv p
+      either (wrongVersion hooglePath) (extractVersion procEnv hooglePath) $
+        version
+
+    extractVersion env hooglePath bs =
+      let versionBS = BS.unpack bs
+      in case parseVersion (takeWhile (not . isSpace) versionBS) of
+        Nothing -> wrongVersion hooglePath versionBS
+        Just v  ->
+          bool (wrongVersion hooglePath) (pure hooglePath) $
+            v >= (env ^. minHoogleVersion)
+
 
 -- | In the case where the '--setup' flag is enabled,
 -- this will trigger the construction of a db file with
