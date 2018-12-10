@@ -55,7 +55,7 @@ findHoogleExecutable = do
       <> "' has incompatible verison: "
       <> v
 
-    -- TODO: Vendor typed-processe
+    -- TODO: Vendor typed-process
     versionCmd env p = proc p ["--numeric-version"] $
       tryAny . fmap fst $ readProcess_ env
 
