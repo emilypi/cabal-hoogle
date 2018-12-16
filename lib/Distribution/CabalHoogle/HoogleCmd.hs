@@ -4,8 +4,6 @@ module Distribution.CabalHoogle.HoogleCmd
   ) where
 
 
-import GHC.IO.Handle (hGetContents)
-
 import System.Directory (findExecutable, doesFileExist, createDirectoryIfMissing)
 import System.Exit (ExitCode(..), exitWith)
 import System.Process (proc, readCreateProcess, callProcess)
@@ -17,11 +15,10 @@ import Data.Functor (void)
 import Data.Semigroup ((<>))
 
 import Distribution.CabalHoogle.Exceptions
-import Distribution.CabalHoogle.HoogleConfig (HoogleConfig(..), minHoogleVersion)
+import Distribution.CabalHoogle.HoogleConfig (HoogleConfig(..))
 import Distribution.CabalHoogle.HoogleOpts (HoogleOpts(..), appendServerArgs, appendGenerativeArgs)
 
 import Distribution.Text (simpleParse)
-import Distribution.Version (Version(..))
 
 
 -- | Main commands ------------------------------------------------
