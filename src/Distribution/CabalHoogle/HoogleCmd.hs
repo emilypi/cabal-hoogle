@@ -1,7 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 module Distribution.CabalHoogle.HoogleCmd
   ( hoogleCmd
@@ -160,20 +156,20 @@ checkVersion
   :: HoogleConfig
   -> FilePath
   -> IO FilePath
-checkVersion HoogleConfig{..} fp = do
-  rawVersion <- versionProc fp
+checkVersion HoogleConfig{..} hooglePath = do
+  rawVersion <- hoogleVersion
   version    <- parseVersion rawVersion
-  bool (wrongVersion fp version) (pure fp) $
+  bool (wrongVersion version) (pure hooglePath) $
     version >= _minHoogleVersion
   where
-    wrongVersion p v = throwM . HoogleVersion
+    wrongVersion v = throwM . HoogleVersion
       $ "Hoogle executable located at '"
-      <> p
+      <> hooglePath
       <> "' has incompatible version: "
       <> show v
 
-    versionProc p =
-      readCreateProcess (proc p ["--numeric-version"]) ""
+    hoogleVersion =
+      readCreateProcess (proc hooglePath ["--numeric-version"]) ""
 
     parseVersion s =
       case simpleParse s of
