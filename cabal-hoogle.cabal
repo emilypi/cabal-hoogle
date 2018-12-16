@@ -75,6 +75,7 @@ executable cabal-hoogle
                      , lens
                      , optparse-applicative
                      , process
+                     , text
 
   -- Directories containing source files.
   hs-source-dirs:      src

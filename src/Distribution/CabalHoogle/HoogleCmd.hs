@@ -59,7 +59,7 @@ parseOpts hooglePath opts@HoogleOpts{..} env@HoogleConfig{..} = do
   where
     rebuildOrSetup =
       if _setup
-      then generateDB hooglePath env opts >> generateHaddocks env
+      then generateDB hooglePath env opts >> generateHaddocks
       else cantSetup >> exitEarly
 
     cantSetup = throwM . NoHoogleDb $
@@ -107,15 +107,24 @@ generateDB hooglePath env@HoogleConfig{..} opts = do
 -- via the 'hoogle' executable and write to generated db file.
 -- Note that if no '--setup' flag has been passed, the db file
 -- must be present in order for this to succeed.
-generateHaddocks :: HoogleConfig -> IO ()
-generateHaddocks = undefined
+generateHaddocks :: IO ()
+generateHaddocks = do
+  -- TODO: this is utter stupidity
+  cabal <- findCabalExecutable
+  void $ createProcess $ proc cabal ["new-haddock"]
+  where
+    findCabalExecutable = do
+      mCabalPath <- findExecutable "cabal"
+      maybe notInstalled pure mCabalPath
+
+    notInstalled =
+      throwM . NotInstalled $ "Cabal executable not found"
 
 -- | If '--setup' is enabled, then if no 'hoogle' executable
 -- is located, 'cabal-hoogle' will attempt to install it via
 -- 'cabal v2-install', and carry on with the setup.
 installHoogle :: HoogleConfig -> IO ()
-installHoogle = undefined
-
+installHoogle HoogleConfig{..} = undefined
 
 -- | Utilities --------------------------------------------------
 
