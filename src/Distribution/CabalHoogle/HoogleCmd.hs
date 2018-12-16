@@ -65,6 +65,7 @@ handleOpts hooglePath opts@HoogleOpts{..} env = do
       "No Hoogle database found. Please use the --setup or --rebuild\
       \flags to ensure that a database is build if not found."
 
+
 -- | Run the 'hoogle' executable given a set of
 -- arguments and configuration details. This will
 -- have the following arguments:
@@ -123,20 +124,29 @@ generateHaddocks :: IO ()
 generateHaddocks = do
   -- TODO: this is utter stupidity
   cabal <- findCabalExecutable
-  void $ createProcess $ proc cabal ["new-haddock"]
+  void . createProcess $ proc cabal ["v2-haddock"]
   where
     findCabalExecutable = do
       mCabalPath <- findExecutable "cabal"
       maybe notInstalled pure mCabalPath
 
     notInstalled =
-      throwM . NotInstalled $ "Cabal executable not found"
+      throwM . NotInstalled $ "Cabal executable not found in $PATH"
 
 -- | If '--setup' is enabled, then if no 'hoogle' executable
 -- is located, 'cabal-hoogle' will attempt to install it via
 -- 'cabal v2-install', and carry on with the setup.
-installHoogle :: HoogleConfig -> IO ()
-installHoogle HoogleConfig{..} = undefined
+installHoogle :: IO ()
+installHoogle = do
+  cabal <- findCabalExecutable
+  void . createProcess $ proc cabal ["v2-install", "hoogle"]
+  where
+    findCabalExecutable = do
+      mCabalPath <- findExecutable "cabal"
+      maybe notInstalled pure mCabalPath
+
+    notInstalled =
+      throwM . NotInstalled $ "Cabal executable not found in $PATH"
 
 -- | Utilities --------------------------------------------------
 

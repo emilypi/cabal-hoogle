@@ -15,7 +15,6 @@ import Data.Typeable
 data CHException where
   NotInstalled  :: Text -> CHException
   Unexpected    :: Text -> CHException
-  CouldNotSetup :: Text -> CHException
   NoHoogleDb    :: Text -> CHException
   HoogleVersion :: Text -> CHException
   deriving (Show, Eq, Ord, Typeable)

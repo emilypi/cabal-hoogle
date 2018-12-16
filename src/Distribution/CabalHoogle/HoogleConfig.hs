@@ -3,6 +3,7 @@ module Distribution.CabalHoogle.HoogleConfig
   ( -- data
     HoogleConfig(..)
     -- defaults
+  , mkDefaultConfig
   , defaultMinHoogleVersion
   , defaultHooglePackageName
   , defaultMinHoogleId
@@ -10,10 +11,13 @@ module Distribution.CabalHoogle.HoogleConfig
   , hooglePackageName
   , minHoogleVersion
   , minHoogleId
+  , hoogleProjectRoot
+  , hoogleDatabasePath
   ) where
 
 
 import System.Directory (getCurrentDirectory, makeRelativeToCurrentDirectory)
+
 import Control.Lens (makeLenses)
 
 import Distribution.Types.PackageName (PackageName(..), mkPackageName)
