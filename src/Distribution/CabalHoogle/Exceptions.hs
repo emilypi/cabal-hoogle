@@ -8,15 +8,14 @@ module Distribution.CabalHoogle.Exceptions
  ) where
 
 import Control.Exception (Exception(..))
-import Data.Text
 import Data.Typeable
 
 
 data CHException where
-  NotInstalled  :: Text -> CHException
-  Unexpected    :: Text -> CHException
-  NoHoogleDb    :: Text -> CHException
-  HoogleVersion :: Text -> CHException
+  NotInstalled  :: String -> CHException
+  Unexpected    :: String -> CHException
+  NoHoogleDb    :: String -> CHException
+  HoogleVersion :: String -> CHException
   deriving (Show, Eq, Ord, Typeable)
 
 instance Exception CHException

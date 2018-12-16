@@ -19,7 +19,6 @@ import Control.Monad.Catch (throwM)
 import Data.Bool (bool)
 import Data.Functor (void)
 import Data.Semigroup ((<>))
-import Data.Text hiding (takeWhile)
 
 import Distribution.CabalHoogle.Exceptions
 import Distribution.CabalHoogle.HoogleConfig (HoogleConfig(..), minHoogleVersion)
@@ -42,7 +41,6 @@ hoogleCmd
 hoogleCmd opts env = do
   hooglePath <- findHoogleExecutable env
   handleOpts hooglePath opts env
-
 
 handleOpts
   :: FilePath
@@ -68,7 +66,6 @@ handleOpts hooglePath opts@HoogleOpts{..} env = do
     cantSetup = throwM . NoHoogleDb $
       "No Hoogle database found. Please use the --setup or --rebuild\
       \flags to ensure that a database is build if not found."
-
 
 -- | Run the 'hoogle' executable given a set of
 -- arguments and configuration details. This will
@@ -98,12 +95,11 @@ runHoogle hooglePath HoogleConfig{..} HoogleOpts{..} = do
 -- if 'hoogle' has an amenable version
 findHoogleExecutable :: HoogleConfig -> IO FilePath
 findHoogleExecutable env = do
-  mHooglePath <- findExecutable "hoogle"
-  maybe notInstalled (checkVersion env) mHooglePath
+  hooglePath <- findExecutable' "hoogle" notInstalled
+  checkVersion env hooglePath
   where
     notInstalled =
-      throwM . NotInstalled $ "Hoogle executable not found"
-
+      NotInstalled $ "Hoogle executable not found"
 
 -- | In the case where the '--setup' flag is enabled,
 -- this will trigger the construction of a db file with
@@ -127,33 +123,32 @@ generateDB hooglePath env@HoogleConfig{..} opts = do
 generateHaddocks :: IO ()
 generateHaddocks = do
   -- TODO: this is utter stupidity
-  cabal <- findCabalExecutable
-  void $ callProcess cabal ["new-haddock"]
+  haddock <- findExecutable' "haddock" notInstalled
+  void $ callProcess haddock []
   where
-    findCabalExecutable = do
-      mCabalPath <- findExecutable "cabal"
-      maybe notInstalled pure mCabalPath
-
     notInstalled =
-      throwM . NotInstalled $ "Cabal executable not found in $PATH"
+      NotInstalled $ "Haddock executable not found in $PATH"
 
 -- | If '--setup' is enabled, then if no 'hoogle' executable
 -- is located, 'cabal-hoogle' will attempt to install it via
 -- 'cabal v2-install', and carry on with the setup.
 installHoogle :: IO ()
 installHoogle = do
-  cabal <- findCabalExecutable
+  cabal <- findExecutable' "cabal" notInstalled
   void $ callProcess cabal ["new-install", "hoogle"]
   where
-    findCabalExecutable = do
-      mCabalPath <- findExecutable "cabal"
-      maybe notInstalled pure mCabalPath
-
     notInstalled =
-      throwM . NotInstalled $ "Cabal executable not found in $PATH"
+      NotInstalled $ "Cabal executable not found in $PATH"
 
 -- | Utilities --------------------------------------------------
 
+findExecutable'
+  :: String
+  -> CHException
+  -> IO FilePath
+findExecutable' cmd err = do
+  mPath <- findExecutable cmd
+  maybe (throwM err) pure mPath
 
 -- | Exit early with prejudice
 exitEarly :: IO a
@@ -171,7 +166,7 @@ checkVersion HoogleConfig{..} fp = do
   bool (wrongVersion fp version) (pure fp) $
     version >= _minHoogleVersion
   where
-    wrongVersion p v = throwM . HoogleVersion . pack
+    wrongVersion p v = throwM . HoogleVersion
       $ "Hoogle executable located at '"
       <> p
       <> "' has incompatible version: "
