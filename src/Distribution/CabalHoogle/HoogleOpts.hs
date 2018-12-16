@@ -12,6 +12,7 @@ module Distribution.CabalHoogle.HoogleOpts
   , setup
   , rebuild
   , startServer
+  , noHaddocks
   , serverPort
   , additionalArgs
   ) where
@@ -28,7 +29,8 @@ data HoogleOpts = HoogleOpts
   { _setup          :: Bool
   , _rebuild        :: Bool
   , _startServer    :: Bool
-  , _serverPort     :: String
+  , _noHaddocks     :: Bool
+  , _serverPort     :: Int
   , _additionalArgs :: [String]
   }
 makeLenses ''HoogleOpts
@@ -42,7 +44,7 @@ appendArgs = (%~) additionalArgs
 
 appendServerArgs :: HoogleOpts -> HoogleOpts
 appendServerArgs hc@HoogleOpts{..} =
-  appendArgs (bool id ((<>) (["server", "--local", "--port", _serverPort])) _startServer) hc
+  appendArgs (bool id ((<>) (["server", "--local", "--port", show _serverPort])) _startServer) hc
 
 appendGenerativeArgs :: HoogleOpts -> HoogleOpts
 appendGenerativeArgs =
@@ -68,13 +70,17 @@ optParser = HoogleOpts
       <> help "When the --start-server flag is enabled, a hoogle server will be spawned.\
               \The default port is 8080, and may be set using the --port flag."
       )
+  <*> switch
+      ( long "no-haddocks"
+      <> help "When the --no-haddocks flag is enable, no haddocks will be generated."
+      )
   <*> option auto
       (  long "port"
       <> short 'p'
       <> help "When a port is specified, it will be used as the hoogle server port if \
               \the --start-server flag is also enabled."
       <> showDefault
-      <> value "8080"
+      <> value 8080
       <> metavar "PORT"
       )
   <*> pure []

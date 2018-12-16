@@ -58,8 +58,12 @@ handleOpts hooglePath opts@HoogleOpts{..} env = do
   where
     rebuildOrSetup =
       if _setup || _rebuild
-      then generateDB hooglePath env opts >> generateHaddocks
+      then rebuildDbAndHaddocks
       else cantSetup >> exitEarly
+
+    rebuildDbAndHaddocks = do
+      generateDB hooglePath env opts
+      bool generateHaddocks (pure ()) $ _noHaddocks
 
     cantSetup = throwM . NoHoogleDb $
       "No Hoogle database found. Please use the --setup or --rebuild\
