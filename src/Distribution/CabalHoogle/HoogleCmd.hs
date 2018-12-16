@@ -41,24 +41,23 @@ hoogleCmd
   -> IO ()
 hoogleCmd opts env = do
   hooglePath <- findHoogleExecutable env
-  parseOpts hooglePath opts env
+  handleOpts hooglePath opts env
 
 
-parseOpts
+handleOpts
   :: FilePath
   -> HoogleOpts
   -> HoogleConfig
   -> IO ()
-parseOpts hooglePath opts@HoogleOpts{..} env@HoogleConfig{..} = do
-  dbExists <- doesFileExist _hoogleDatabasePath
+handleOpts hooglePath opts@HoogleOpts{..} env = do
+  dbExists <- doesFileExist (_hoogleDatabasePath env)
   -- if db exists and rebuild is not set, do nothing else setup and rebuild
   bool rebuildOrSetup (pure ()) $ dbExists && (not _rebuild)
   -- if server is enabled, add local server opts
-  bool (runHoogle hooglePath env opts) (runHoogle hooglePath env (appendServerArgs opts)) $
-    _startServer
+  runHoogle hooglePath env (appendServerArgs opts)
   where
     rebuildOrSetup =
-      if _setup
+      if _setup || _rebuild
       then generateDB hooglePath env opts >> generateHaddocks
       else cantSetup >> exitEarly
 
@@ -66,6 +65,19 @@ parseOpts hooglePath opts@HoogleOpts{..} env@HoogleConfig{..} = do
       "No Hoogle database found. Please use the --setup or --rebuild\
       \flags to ensure that a database is build if not found."
 
+-- | Run the 'hoogle' executable given a set of
+-- arguments and configuration details. This will
+-- have the following arguments:
+--
+--  * if '--setup' or '--rebuild' flags were enabled, or if an existing
+--    database is not found, then haddocks and database will be generated
+--
+--  * if only '--setup' was set, then haddocks, and database
+--    will be generated if the database does not exist or '--rebuild'
+--    is flagged also (or both)
+--
+--  * if '--server' is also set, then a server will be started locally
+--    on port 8080.
 runHoogle
   :: FilePath
   -> HoogleConfig
