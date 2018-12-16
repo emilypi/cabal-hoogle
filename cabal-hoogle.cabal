@@ -57,32 +57,24 @@ executable cabal-hoogle
   main-is:             Main.hs
 
   -- Modules included in this executable, other than Main.
-  other-modules:       CabalHoogle
-                     , Distribution.Exceptions
-                     , Distribution.HoogleCmd
-                     , System.Typed
+  other-modules:       Distribution.CabalHoogle
+                     , Distribution.CabalHoogle.Exceptions
+                     , Distribution.CabalHoogle.HoogleCmd
+                     , Distribution.CabalHoogle.HoogleConfig
+                     , Distribution.CabalHoogle.HoogleOpts
 
   -- LANGUAGE extensions used by modules in this package.
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
   build-depends:       base ^>= 4.11
-                     , bytestring
                      , Cabal ^>= 2.4
-                     , containers
                      , directory
-                     , errors
                      , exceptions
                      , hoogle
                      , lens
-                     , mtl
                      , optparse-applicative
                      , process
-                     , reflection
-                     , stm
-                     , text
-                     , transformers
-                     , yet-another-logger
 
   -- Directories containing source files.
   hs-source-dirs:      src

@@ -1,6 +1,7 @@
-module CabalHoogle
+module Distribution.CabalHoogle
   ( cabalHoogle
   ) where
+
 
 
 cabalHoogle

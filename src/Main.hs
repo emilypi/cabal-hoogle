@@ -2,7 +2,7 @@ module Main where
 
 
 import System.Environment (getArgs)
-import CabalHoogle (cabalHoogle)
+import Distribution.CabalHoogle (cabalHoogle)
 
 main :: IO ()
 main = getArgs >>= cabalHoogle
