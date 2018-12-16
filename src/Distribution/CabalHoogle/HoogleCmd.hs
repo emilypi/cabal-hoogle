@@ -12,7 +12,7 @@ import GHC.IO.Handle (hGetContents)
 
 import System.Directory (findExecutable, doesFileExist, createDirectoryIfMissing)
 import System.Exit (ExitCode(..), exitWith)
-import System.Process (proc, readCreateProcess, createProcess)
+import System.Process (proc, readCreateProcess, callProcess)
 
 import Control.Monad.Catch (throwM)
 
@@ -86,7 +86,7 @@ runHoogle
   -> IO ()
 runHoogle hooglePath HoogleConfig{..} HoogleOpts{..} = do
   let dbArgs = ["--database=" <> _hoogleDatabasePath]
-  void $ createProcess $ proc hooglePath (_additionalArgs <> dbArgs)
+  void $ callProcess hooglePath (_additionalArgs <> dbArgs)
 
 -- | Using the process config and 'System.Directory',
 -- grep available $PATH$ information for hoogle
@@ -124,7 +124,7 @@ generateHaddocks :: IO ()
 generateHaddocks = do
   -- TODO: this is utter stupidity
   cabal <- findCabalExecutable
-  void . createProcess $ proc cabal ["v2-haddock"]
+  void $ callProcess cabal ["new-haddock"]
   where
     findCabalExecutable = do
       mCabalPath <- findExecutable "cabal"
@@ -139,7 +139,7 @@ generateHaddocks = do
 installHoogle :: IO ()
 installHoogle = do
   cabal <- findCabalExecutable
-  void . createProcess $ proc cabal ["v2-install", "hoogle"]
+  void $ callProcess cabal ["new-install", "hoogle"]
   where
     findCabalExecutable = do
       mCabalPath <- findExecutable "cabal"
