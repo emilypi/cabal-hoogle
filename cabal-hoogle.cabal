@@ -66,14 +66,14 @@ executable cabal-hoogle
   -- other-extensions:
 
   -- Other library packages from which modules are imported.
-  build-depends:       base ^>= 4.11
-                     , Cabal ^>= 2.4
-                     , directory
-                     , exceptions
-                     , hoogle
-                     , lens
-                     , optparse-applicative
-                     , process
+  build-depends:       base                ^>= 4.11
+                     , Cabal               ^>= 2.4
+                     , directory            >= 1.0
+                     , exceptions           >= 0.8 && < 0.11
+                     , hoogle               >= 5.0
+                     , lens                 >= 4.0 && < 5
+                     , optparse-applicative >= 0.14 && < 0.15
+                     , process              >= 1.0
 
   -- Directories containing source files.
   hs-source-dirs:      src
