@@ -52,7 +52,7 @@ handleOpts
   -> IO ()
 handleOpts hooglePath opts@HoogleOpts{..} env = do
   dbExists <- doesFileExist (_hoogleDatabasePath env)
-  bool cantSetup (rebuildOrSetup dbExists) $ _rebuild || _setup || dbExists
+  bool cantSetup (rebuildOrSetup dbExists) $ _rebuild || _setup
   -- if server is enabled, add local server opts
   when _startServer $ generateServer hooglePath opts
   where
