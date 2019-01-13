@@ -20,9 +20,9 @@ import System.Directory (getCurrentDirectory, makeRelativeToCurrentDirectory)
 
 import Control.Lens (makeLenses)
 
-import Distribution.Types.PackageName (PackageName(..), mkPackageName)
+import Distribution.Types.PackageName (PackageName, mkPackageName)
 import Distribution.Types.PackageId (PackageIdentifier(..))
-import Distribution.Version (Version(..), mkVersion)
+import Distribution.Version (Version, mkVersion)
 
 
 -- | Data ----------------------------------------

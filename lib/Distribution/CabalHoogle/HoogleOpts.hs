@@ -6,15 +6,16 @@ module Distribution.CabalHoogle.HoogleOpts
     -- parser
   , optParser
     -- utils
-  , appendServerArgs
-  , appendGenerativeArgs
+  , appendCommand
+  , appendServerCommand
+  , appendGenerativeCommand
     -- optics
   , setup
   , rebuild
   , startServer
   , noHaddocks
   , serverPort
-  , additionalArgs
+  , hoogleCommand
   ) where
 
 
@@ -31,54 +32,51 @@ data HoogleOpts = HoogleOpts
   , _startServer    :: Bool
   , _noHaddocks     :: Bool
   , _serverPort     :: Int
-  , _additionalArgs :: [String]
+  , _hoogleCommand  :: [String]
   }
 makeLenses ''HoogleOpts
 
 
-appendArgs
+appendCommand
   :: ([String] -> [String])
   -> HoogleOpts
   -> HoogleOpts
-appendArgs = (%~) additionalArgs
+appendCommand = (%~) hoogleCommand
 
-appendServerArgs :: HoogleOpts -> HoogleOpts
-appendServerArgs hc@HoogleOpts{..} =
-  appendArgs (bool id ((<>) (["server", "--local", "--port", show _serverPort])) _startServer) hc
+appendServerCommand :: HoogleOpts -> HoogleOpts
+appendServerCommand hc@HoogleOpts{..} =
+  appendCommand (bool id ((<>) (["server", "--local", "--port", show _serverPort])) _startServer) hc
 
-appendGenerativeArgs :: HoogleOpts -> HoogleOpts
-appendGenerativeArgs =
-  appendArgs ((<>) ["generate", "--local"])
+appendGenerativeCommand :: HoogleOpts -> HoogleOpts
+appendGenerativeCommand =
+  appendCommand ((<>) ["generate", "--local"])
 
 optParser :: Parser HoogleOpts
 optParser = HoogleOpts
   <$> switch
       (  long "setup"
-      <> short 's'
-      <> help "When the --setup flag is enabled, a hoogle db and haddocks will be generated. \
+      <> help "A hoogle db and haddocks will be generated. \
               \If --rebuild is not flagged and the hoogle db exists, nothing will be rebuilt.\
               \If the hoogle db does not exist, then --setup or --rebuild must be flagged."
       )
   <*> switch
       (  long "rebuild"
-      <> short 'r'
-      <> help "When the --rebuild flag is enabled, the hoogle db and haddocks will be generated.\
+      <> help "When the '--rebuild' flag is enabled, the hoogle db and haddocks will be generated. \
               \If --rebuild is not flagged and the hoogle db exists, nothing will be rebuilt."
       )
   <*> switch
       (  long "start-server"
-      <> help "When the --start-server flag is enabled, a hoogle server will be spawned.\
+      <> help "When the '--start-server' flag is enabled, a hoogle server will be spawned. \
               \The default port is 8080, and may be set using the --port flag."
       )
   <*> switch
       ( long "no-haddocks"
-      <> help "When the --no-haddocks flag is enable, no haddocks will be generated."
+      <> help "No haddocks will be generated."
       )
   <*> option auto
       (  long "port"
-      <> short 'p'
       <> help "When a port is specified, it will be used as the hoogle server port if \
-              \the --start-server flag is also enabled."
+              \the '--start-server' flag is also enabled."
       <> showDefault
       <> value 8080
       <> metavar "PORT"
