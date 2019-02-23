@@ -23,16 +23,19 @@ import Data.Bool (bool)
 import Data.Functor (void)
 import Data.Semigroup ((<>))
 
+import Distribution.Text (simpleParse)
+
+-- internal hoogle modules
+
 import Distribution.CabalHoogle.Exceptions
 import Distribution.CabalHoogle.HoogleConfig (HoogleConfig(..))
 import Distribution.CabalHoogle.HoogleOpts (HoogleOpts(..), appendGenerativeCommand,
                                             appendCommand, hoogleCommand)
 
-import Distribution.Text (simpleParse)
 
-
--- | Main commands ------------------------------------------------
-
+------------------------------------------------------------------------------
+-- Main commands
+------------------------------------------------------------------------------
 
 -- | Check for 'hoogle' binary in given path
 -- and run hoogle with built command set. All
@@ -154,18 +157,47 @@ generateHaddocks = do
     notInstalled =
       NotInstalled $ "Cabal executable not found in $PATH"
 
--- | If '--setup' is enabled, then if no 'hoogle' executable
--- is located, 'cabal-hoogle' will attempt to install it via
--- 'cabal v2-install', and carry on with the setup.
-_installHoogle :: IO ()
-_installHoogle = do
-  cabal <- findExecutable' "cabal" notInstalled
-  squashStreamingProcess cabal ["v2-install", "--verbose=0", "hoogle"]
-  where
-    notInstalled =
-      NotInstalled $ "Cabal executable not found in $PATH"
+-- -- | If '--setup' is enabled, then if no 'hoogle' executable
+-- -- is located, 'cabal-hoogle' will attempt to install it via
+-- -- 'cabal v2-install', and carry on with the setup.
+-- installHoogle :: IO ()
+-- installHoogle = do
+--   cabal <- findExecutable' "cabal" notInstalled
+--   squashStreamingProcess cabal ["v2-install", "--verbose=0", "hoogle"]
+--   where
+--     notInstalled =
+--       NotInstalled $ "Cabal executable not found in $PATH"
 
--- | Utilities --------------------------------------------------
+-- | Check the version given a path to a valid
+-- 'hoogle' executable
+checkVersion
+  :: HoogleConfig
+  -> FilePath
+  -> IO FilePath
+checkVersion HoogleConfig{..} hooglePath = do
+  rawVersion <- hoogleVersion
+  version    <- parseVersion rawVersion
+  bool (wrongVersion version) (pure hooglePath) $
+    version >= _minHoogleVersion
+  where
+    wrongVersion v = throwM . HoogleVersion
+      $ "Hoogle executable located at '"
+      <> hooglePath
+      <> "' has incompatible version: "
+      <> show v
+
+    hoogleVersion =
+      readCreateProcess (proc hooglePath ["--numeric-version"]) ""
+
+    parseVersion s =
+      case simpleParse s of
+        Nothing ->
+          throwM . HoogleVersion $ "Version string malformed"
+        Just v  ->  pure v
+
+------------------------------------------------------------------------------
+-- Utilities
+------------------------------------------------------------------------------
 
 findExecutable'
   :: String
@@ -194,33 +226,6 @@ squashStreamingProcess cmd args = do
     handleUnexpected = \case
       ExitSuccess -> pure ()
       t           -> throwM . Unexpected $ t
-
--- | Check the version given a path to a valid
--- 'hoogle' executable
-checkVersion
-  :: HoogleConfig
-  -> FilePath
-  -> IO FilePath
-checkVersion HoogleConfig{..} hooglePath = do
-  rawVersion <- hoogleVersion
-  version    <- parseVersion rawVersion
-  bool (wrongVersion version) (pure hooglePath) $
-    version >= _minHoogleVersion
-  where
-    wrongVersion v = throwM . HoogleVersion
-      $ "Hoogle executable located at '"
-      <> hooglePath
-      <> "' has incompatible version: "
-      <> show v
-
-    hoogleVersion =
-      readCreateProcess (proc hooglePath ["--numeric-version"]) ""
-
-    parseVersion s =
-      case simpleParse s of
-        Nothing ->
-          throwM . HoogleVersion $ "Version string malformed"
-        Just v  ->  pure v
 
 prettyPrint :: String -> IO ()
 prettyPrint s = setSGR [SetColor Foreground Vivid Green]
